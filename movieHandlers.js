@@ -1,8 +1,22 @@
 const database = require("./database.js");
 
 const getMovies = (req, res) => {
+  let sql = "select * from movies";
+  let sqlValue = [];
+  if (req.query.color) {
+    sql.match(/where/)
+      ? (sql += " and color = ?")
+      : (sql += " where color = ?");
+    sqlValue.push(req.query.color);
+  }
+  if (req.query.max_duration) {
+    sql.match(/where/)
+      ? (sql += " and duration <= ?")
+      : (sql += " where duration <= ?");
+    sqlValue.push(req.query.max_duration);
+  }
   database
-    .query("select * from movies")
+    .query(sql, sqlValue)
     .then(([movies]) => {
       res.json(movies);
     })
@@ -31,8 +45,20 @@ const getMovieById = (req, res) => {
 };
 
 const getUsers = (req, res) => {
+  let sql = "select * from users";
+  let sqlValue = [];
+  if (req.query.language) {
+    sql.match(/where/)
+      ? (sql += " and language = ?")
+      : (sql += " where language = ?");
+    sqlValue.push(req.query.language);
+  }
+  if (req.query.city) {
+    sql.match(/where/) ? (sql += " and city = ?") : (sql += " where city = ?");
+    sqlValue.push(req.query.city);
+  }
   database
-    .query("select * from users")
+    .query(sql, sqlValue)
     .then(([users]) => res.status(200).json(users))
     .catch((err) => {
       console.error(err);
