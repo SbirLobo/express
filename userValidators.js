@@ -5,6 +5,7 @@ const validateUser = [
   body("email").isLength({ max: 255 }).isEmail().notEmpty(),
   body("city").isLength({ max: 255 }).notEmpty(),
   body("language").isLength({ max: 255 }).notEmpty(),
+  body("password").isLength({ max: 255 }).notEmpty(),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
