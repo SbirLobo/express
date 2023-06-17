@@ -4,7 +4,14 @@ const express = require("express");
 
 const { validateMovie } = require("./validators.js");
 const { validateUser } = require("./userValidators.js");
-const { hashPassword } = require("./auth.js");
+const {
+  hashPassword,
+  verifyPassword,
+  verifyToken,
+  checkUser,
+} = require("./auth.js");
+const movieHandlers = require("./movieHandlers");
+const usersHandlers = require("./usersHandlers");
 
 const app = express();
 
@@ -16,24 +23,41 @@ const welcome = (req, res) => {
   res.send("Welcome to my favourite movie list");
 };
 
-app.get("/", welcome);
+const youCan = (req, res) => {
+  res.send(
+    "You can GET /movies, /movies/:id, /users & /users/:id. If you're login, you can POST, PUT or DELETE /movies"
+  );
+};
 
-const movieHandlers = require("./movieHandlers");
-const usersHandlers = require("./usersHandlers.js");
+app.get("/", welcome);
+app.get("/api", youCan);
+
+app.post(
+  "/api/login",
+  usersHandlers.getUserByEmailWithPasswordAndPassToNext,
+  verifyPassword
+);
 
 app.get("/api/movies", movieHandlers.getMovies);
 app.get("/api/movies/:id", movieHandlers.getMovieById);
+app.get("/api/users", usersHandlers.getUsers);
+app.get("/api/users/:id", usersHandlers.getUsersById);
+app.post("/api/users", validateUser, hashPassword, usersHandlers.postUser);
+
+app.use(verifyToken);
+
 app.post("/api/movies", validateMovie, movieHandlers.postMovie);
 app.put("/api/movies/:id", validateMovie, movieHandlers.updateMovie);
 app.delete("/api/movies/:id", movieHandlers.deleteMovie);
 
-app.get("/api/users", usersHandlers.getUsers);
-app.get("/api/users/:id", usersHandlers.getUsersById);
-app.post("/api/users", validateUser, hashPassword, usersHandlers.postUser);
-app.put("/api/users/:id", validateUser, hashPassword, usersHandlers.updateUser);
-// app.post("/api/users", validateUser, usersHandlers.postUser);
-// app.put("/api/users/:id", validateUser, usersHandlers.updateUser);
-app.delete("/api/users/:id", usersHandlers.deleteUser);
+app.put(
+  "/api/users/:id",
+  checkUser,
+  validateUser,
+  hashPassword,
+  usersHandlers.updateUser
+);
+app.delete("/api/users/:id", checkUser, usersHandlers.deleteUser);
 
 app.listen(port, (err) => {
   if (err) {

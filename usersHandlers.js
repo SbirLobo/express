@@ -22,9 +22,26 @@ const getUsers = (req, res) => {
     });
 };
 
+const getUserByEmailWithPasswordAndPassToNext = (req, res, next) => {
+  const { email } = req.body;
+  database
+    .query("select * from users where email = ?", [email])
+    .then(([users]) => {
+      if (users[0] != null) {
+        req.user = users[0];
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    });
+};
+
 const getUsersById = (req, res) => {
   const id = parseInt(req.params.id);
-
   database
     .query(
       "select id, firstname, lastname, email, city, language from users where id = ?",
@@ -81,7 +98,7 @@ const updateUser = (req, res) => {
             "Cet identifiant n'est pas attribué, prenez-le et rejoignez nous."
           );
       } else {
-        res.sendStatus(204);
+        res.status(204).send("User modified");
       }
     })
     .catch((err) => {
@@ -117,4 +134,5 @@ module.exports = {
   postUser,
   updateUser,
   deleteUser,
+  getUserByEmailWithPasswordAndPassToNext,
 };
